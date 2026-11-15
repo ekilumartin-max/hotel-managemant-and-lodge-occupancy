@@ -1,0 +1,1571 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rwizi Arch Hotel Kansanga - Management System</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        /* Core Theme */
+        --primary-dark: #022c22;
+        --primary-green: #047857;
+        --accent-gold: #eab308;
+        --accent-gold-hover: #ca8a04;
+        --bg-light: #f4f7f5;
+        --card-bg: #ffffff;
+        --text-main: #2b3731;
+        --text-muted: #6b7c73;
+        --border-color: #e2e8e4;
+
+        /* Vibrant Accents */
+        --success: #10b981;
+        --danger: #ef4444;
+        --info: #3b82f6;
+        --warning: #f97316;
+        --purple: #8b5cf6;
+        --pink: #ec4899;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+
+      body {
+        background-color: var(--bg-light);
+        color: var(--text-main);
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* --- Login Screen --- */
+      #login-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(
+          135deg,
+          var(--primary-dark),
+          var(--primary-green),
+          var(--info)
+        );
+        background-size: 200% 200%;
+        animation: gradientBG 10s ease infinite;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+
+      @keyframes gradientBG {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      .login-card {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 40px;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        width: 100%;
+        max-width: 380px;
+        backdrop-filter: blur(10px);
+      }
+
+      .login-card h2 {
+        color: var(--primary-dark);
+        font-family: "Playfair Display", serif;
+        font-size: 1.8rem;
+        margin-bottom: 5px;
+      }
+
+      .login-card p {
+        color: var(--text-muted);
+        margin-bottom: 25px;
+      }
+
+      .login-card input {
+        width: 100%;
+        padding: 14px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 1rem;
+        outline: none;
+        transition: border 0.3s;
+      }
+
+      .login-card input:focus {
+        border-color: var(--accent-gold);
+      }
+
+      /* App Layout */
+      .app-layout {
+        display: none; /* Hidden until authenticated */
+        width: 100vw;
+        height: 100vh;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        width: 280px;
+        background-color: var(--primary-dark);
+        color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .brand {
+        padding: 24px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: linear-gradient(
+          to right,
+          rgba(234, 179, 8, 0.1),
+          transparent
+        );
+      }
+
+      .brand-sub {
+        display: block;
+        font-family: "Playfair Display", serif;
+        font-size: 1.1rem;
+        color: var(--accent-gold);
+        letter-spacing: 0.5px;
+      }
+
+      .brand-main {
+        font-size: 1.4rem;
+        font-weight: 700;
+        font-family: "Playfair Display", serif;
+      }
+
+      .nav-menu {
+        padding: 20px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        overflow-y: auto;
+        flex-grow: 1;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+        padding: 12px 16px;
+        background: transparent;
+        border: none;
+        color: #a3b8ad;
+        font-size: 0.95rem;
+        font-weight: 500;
+        text-align: left;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .nav-item i {
+        font-size: 1.1rem;
+        width: 20px;
+        text-align: center;
+      }
+
+      .nav-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: #ffffff;
+      }
+
+      .nav-item.active {
+        background: linear-gradient(90deg, var(--accent-gold), #fde047);
+        color: var(--primary-dark);
+        font-weight: 700;
+        box-shadow: 0 4px 10px rgba(234, 179, 8, 0.3);
+      }
+
+      .sidebar-footer {
+        padding: 16px 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(0, 0, 0, 0.3);
+      }
+
+      .user-badge {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .avatar {
+        width: 38px;
+        height: 38px;
+        background: var(--info);
+        color: #ffffff;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+      }
+
+      .user-info {
+        display: flex;
+        flex-direction: column;
+      }
+      .user-info .name {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #ffffff;
+      }
+      .user-info .role {
+        font-size: 0.75rem;
+        color: #94a89e;
+      }
+
+      /* Main Content */
+      .main-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow-y: auto;
+      }
+
+      /* Top Bar */
+      .top-bar {
+        background: var(--card-bg);
+        padding: 20px 32px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .page-title-box h1 {
+        font-family: "Playfair Display", serif;
+        font-size: 1.6rem;
+        color: var(--primary-dark);
+      }
+
+      .page-title-box p {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+
+      .top-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .time-display {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--info);
+        background: #eff6ff;
+        padding: 8px 14px;
+        border-radius: 20px;
+        border: 1px solid #bfdbfe;
+      }
+
+      /* Buttons */
+      .btn {
+        padding: 10px 18px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary-green), #059669);
+        color: #ffffff;
+        box-shadow: 0 4px 10px rgba(4, 120, 87, 0.3);
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+      }
+
+      .btn-secondary {
+        background: #e2e8e4;
+        color: var(--text-main);
+      }
+      .btn-text {
+        background: none;
+        border: none;
+        color: var(--info);
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      /* Tab Panes */
+      .tab-pane {
+        display: none;
+        padding: 30px;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+
+      .tab-pane.active {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Hero Banner */
+      .hero-banner {
+        background: linear-gradient(135deg, var(--primary-dark), var(--purple));
+        color: #ffffff;
+        padding: 32px;
+        border-radius: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 20px rgba(139, 92, 246, 0.2);
+      }
+
+      .hero-text h2 {
+        font-family: "Playfair Display", serif;
+        font-size: 1.8rem;
+        margin-bottom: 6px;
+      }
+      .hero-text p {
+        color: #ddd6fe;
+        font-size: 0.95rem;
+      }
+
+      /* Stats Grid */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        margin-bottom: 24px;
+      }
+
+      .stat-card {
+        background: var(--card-bg);
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        transition: transform 0.2s;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-3px);
+      }
+
+      /* Colorful Stat Borders */
+      .stat-card:nth-child(1) {
+        border-bottom: 4px solid var(--info);
+      }
+      .stat-card:nth-child(2) {
+        border-bottom: 4px solid var(--success);
+      }
+      .stat-card:nth-child(3) {
+        border-bottom: 4px solid var(--warning);
+      }
+      .stat-card:nth-child(4) {
+        border-bottom: 4px solid var(--pink);
+      }
+
+      .stat-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+        margin: 8px 0;
+      }
+      .stat-value.highlight {
+        color: var(--success);
+      }
+
+      /* Content Cards & Tables */
+      .content-card {
+        background: var(--card-bg);
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+      }
+
+      .card-header h3 {
+        font-family: "Playfair Display", serif;
+        font-size: 1.25rem;
+        color: var(--primary-dark);
+        margin-bottom: 16px;
+      }
+      .table-responsive {
+        overflow-x: auto;
+      }
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.9rem;
+      }
+      .data-table th {
+        background: #f8faf9;
+        padding: 14px 16px;
+        color: var(--text-muted);
+        font-weight: 600;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .data-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-main);
+      }
+
+      .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+      .badge-success {
+        background: #dcfce7;
+        color: var(--success);
+        border: 1px solid #bbf7d0;
+      }
+      .badge-warning {
+        background: #ffedd5;
+        color: var(--warning);
+        border: 1px solid #fed7aa;
+      }
+
+      /* Section Headers */
+      .section-header {
+        margin-bottom: 24px;
+      }
+      .section-header h2 {
+        font-family: "Playfair Display", serif;
+        font-size: 1.6rem;
+        color: var(--primary-dark);
+      }
+      .section-header p {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-top: 4px;
+      }
+
+      /* Rooms Grid */
+      .rooms-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+      }
+      .room-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+      }
+
+      .room-card:nth-child(even) .room-card-header {
+        background: linear-gradient(135deg, var(--info), #2563eb);
+      }
+      .room-card:nth-child(odd) .room-card-header {
+        background: linear-gradient(135deg, var(--primary-green), #059669);
+      }
+
+      .room-card-header {
+        color: #ffffff;
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .room-card-body {
+        padding: 20px;
+      }
+      .room-card-body p {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+      }
+      .room-price {
+        font-weight: 700;
+        color: var(--primary-dark);
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+      }
+
+      /* Services Grid with Colorful Icons */
+      .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+      }
+      .service-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        padding: 24px;
+        border-radius: 10px;
+      }
+      .service-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 1.2rem;
+        margin-bottom: 16px;
+        color: #fff;
+      }
+
+      .service-card:nth-child(1) .service-icon {
+        background: linear-gradient(135deg, var(--warning), #ea580c);
+      }
+      .service-card:nth-child(2) .service-icon {
+        background: linear-gradient(135deg, var(--info), #2563eb);
+      }
+      .service-card:nth-child(3) .service-icon {
+        background: linear-gradient(135deg, var(--pink), #db2777);
+      }
+      .service-card:nth-child(4) .service-icon {
+        background: linear-gradient(135deg, var(--purple), #7c3aed);
+      }
+
+      .service-card h3 {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        color: var(--primary-dark);
+      }
+      .service-card p {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        line-height: 1.4;
+        margin-bottom: 16px;
+      }
+
+      /* Showcase Gallery */
+      .showcase-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 24px;
+      }
+      .showcase-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+      }
+
+      .showcase-img-box {
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+      }
+      .showcase-card:nth-child(1) .showcase-img-box {
+        background: linear-gradient(135deg, #ef4444, #b91c1c);
+      }
+      .showcase-card:nth-child(2) .showcase-img-box {
+        background: linear-gradient(135deg, var(--success), #047857);
+      }
+      .showcase-card:nth-child(3) .showcase-img-box {
+        background: linear-gradient(135deg, var(--accent-gold), #b45309);
+      }
+
+      .showcase-body {
+        padding: 20px;
+      }
+      .showcase-body h3 {
+        font-family: "Playfair Display", serif;
+        font-size: 1.2rem;
+        color: var(--primary-dark);
+        margin-bottom: 8px;
+      }
+      .showcase-body p {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 14px;
+        line-height: 1.5;
+      }
+
+      /* Combined Project & Worker tab styles */
+      .survey-notes {
+        background: #fef9c3;
+        border-left: 4px solid var(--accent-gold);
+        padding: 16px 20px;
+        border-radius: 4px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(234, 179, 8, 0.15);
+      }
+      .survey-notes h4 {
+        color: var(--accent-gold-hover);
+        margin-bottom: 8px;
+        font-weight: 700;
+      }
+      .survey-notes ul {
+        padding-left: 20px;
+        font-size: 0.9rem;
+        color: var(--text-main);
+        line-height: 1.6;
+      }
+
+      .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+      .team-card {
+        background: var(--bg-light);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        position: relative;
+        transition: all 0.2s;
+        border-left: 4px solid var(--info);
+      }
+      .team-card:nth-child(even) {
+        border-left-color: var(--pink);
+      }
+      .team-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+
+      .team-card input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 5px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--primary-dark);
+        outline: none;
+        background: transparent;
+      }
+      .team-card input.role-input {
+        font-size: 0.85rem;
+        font-weight: 400;
+        color: var(--text-muted);
+        margin-bottom: 0;
+      }
+      .team-card input:hover {
+        border-color: var(--border-color);
+        background: #ffffff;
+      }
+      .team-card input:focus {
+        border-color: var(--info);
+        background: #ffffff;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+      }
+      .edit-hint {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        opacity: 0.6;
+      }
+
+      /* Modal */
+      .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+      .modal-backdrop.open {
+        display: flex;
+      }
+      .modal-card {
+        background: var(--card-bg);
+        width: 100%;
+        max-width: 520px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+      .modal-header {
+        background: linear-gradient(135deg, var(--primary-green), #059669);
+        color: #ffffff;
+        padding: 18px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .modal-header h3 {
+        font-family: "Playfair Display", serif;
+        font-size: 1.2rem;
+      }
+      .btn-close {
+        background: none;
+        border: none;
+        color: #ffffff;
+        font-size: 1.5rem;
+        cursor: pointer;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+      }
+      .btn-close:hover {
+        opacity: 1;
+      }
+      .modal-body {
+        padding: 24px;
+      }
+      .form-group {
+        margin-bottom: 16px;
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .form-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 6px;
+      }
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 0.9rem;
+        outline: none;
+      }
+      .form-group input:focus,
+      .form-group select:focus {
+        border-color: var(--info);
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+      }
+      .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Login Overlay -->
+    <div id="login-overlay">
+      <div class="login-card">
+        <h2>Rwizi Arch Hotel</h2>
+        <p>Staff Management Portal</p>
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <input
+            type="password"
+            id="login-password"
+            placeholder="Enter Access Password"
+            required
+          />
+          <button
+            type="submit"
+            class="btn btn-primary"
+            style="
+              width: 100%;
+              margin-top: 20px;
+              padding: 14px;
+              font-size: 1rem;
+            "
+          >
+            Secure Login
+          </button>
+          <p
+            id="login-error"
+            style="
+              color: var(--danger);
+              font-size: 0.85rem;
+              font-weight: 600;
+              display: none;
+              margin-top: 15px;
+            "
+          >
+            Incorrect password. Hint: worker1234
+          </p>
+        </form>
+      </div>
+    </div>
+
+    <!-- Main App Layout (Hidden until logged in) -->
+    <div class="app-layout" id="main-app">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div>
+          <div class="brand">
+            <span class="brand-sub">Rwizi Arch Hotel</span>
+            <span class="brand-main">Kansanga</span>
+          </div>
+          <nav class="nav-menu">
+            <button
+              class="nav-item active"
+              onclick="switchTab('dashboard', this)"
+            >
+              <i class="fas fa-home"></i> Dashboard
+            </button>
+            <button class="nav-item" onclick="switchTab('rooms', this)">
+              <i class="fas fa-bed"></i> Rooms
+            </button>
+            <button class="nav-item" onclick="switchTab('reservations', this)">
+              <i class="fas fa-calendar-check"></i> Reservations
+            </button>
+            <button class="nav-item" onclick="switchTab('housekeeping', this)">
+              <i class="fas fa-broom"></i> Housekeeping
+            </button>
+            <button class="nav-item" onclick="switchTab('services', this)">
+              <i class="fas fa-concierge-bell"></i> Services
+            </button>
+            <button class="nav-item" onclick="switchTab('showcase', this)">
+              <i class="fas fa-images"></i> Showcase Gallery
+            </button>
+            <button class="nav-item" onclick="switchTab('project', this)">
+              <i class="fas fa-users-cog"></i> Worker Management
+            </button>
+          </nav>
+        </div>
+        <div class="sidebar-footer">
+          <div class="user-badge">
+            <div class="avatar">FD</div>
+            <div class="user-info">
+              <span class="name">Front Desk Manager</span>
+              <span class="role">System Administrator</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Top Bar -->
+        <header class="top-bar">
+          <div class="page-title-box">
+            <h1 id="page-title">Hotel Dashboard</h1>
+            <p id="page-subtitle">
+              Welcome to Rwizi Arch Hotel Kansanga • Your one stop solution for
+              best hotel experience
+            </p>
+          </div>
+          <div class="top-actions">
+            <div class="time-display">
+              <i class="far fa-clock"></i> <span id="live-clock">--:-- --</span>
+            </div>
+            <button class="btn btn-primary" onclick="openReservationModal()">
+              <i class="fas fa-plus"></i> New Booking
+            </button>
+          </div>
+        </header>
+
+        <!-- Dashboard Tab -->
+        <div id="tab-dashboard" class="tab-pane active">
+          <div class="hero-banner">
+            <div class="hero-text">
+              <h2>Hospitality, managed beautifully.</h2>
+              <p>Manage rooms, guests, reservations, and staff seamlessly.</p>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label" style="color: var(--info)">
+                Total Rooms
+              </div>
+              <div class="stat-value" id="stat-total-rooms">4</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label" style="color: var(--success)">
+                Active Reservations
+              </div>
+              <div class="stat-value highlight" id="stat-active-res">1</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label" style="color: var(--warning)">
+                Payments Received
+              </div>
+              <div class="stat-value">UGX 450,000</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label" style="color: var(--pink)">
+                Pending Bills
+              </div>
+              <div class="stat-value" style="color: var(--danger)">UGX 0</div>
+            </div>
+          </div>
+
+          <div class="content-card">
+            <div class="card-header">
+              <h3>Recent Reservations</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Guest Name</th>
+                    <th>Room</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-res-table">
+                  <!-- Dynamic content -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rooms Tab -->
+        <div id="tab-rooms" class="tab-pane">
+          <div class="section-header">
+            <h2>Room Management</h2>
+            <p>
+              Monitor live room availability, pricing, and guest assignments
+            </p>
+          </div>
+          <div class="rooms-grid" id="rooms-management-grid">
+            <!-- Dynamic content -->
+          </div>
+        </div>
+
+        <!-- Reservations Tab -->
+        <div id="tab-reservations" class="tab-pane">
+          <div class="section-header">
+            <h2>Reservations Management</h2>
+            <p>Create, review, and manage guest bookings</p>
+          </div>
+          <div class="content-card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Guest</th>
+                    <th>Room</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="full-reservations-table">
+                  <!-- Dynamic content -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Housekeeping Tab -->
+        <div id="tab-housekeeping" class="tab-pane">
+          <div class="section-header">
+            <h2>Housekeeping & Maintenance</h2>
+            <p>
+              Track room cleanliness, inspection status, and staff assignments
+            </p>
+          </div>
+          <div class="content-card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Room</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Assigned Staff</th>
+                    <th>Last Cleaned</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="housekeeping-table">
+                  <!-- Dynamic content -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Services Tab -->
+        <div id="tab-services" class="tab-pane">
+          <div class="section-header">
+            <h2>Available Hotel Services</h2>
+            <p>
+              Enhance guest stays with premium amenities and on-demand options.
+            </p>
+          </div>
+          <div class="services-grid">
+            <div class="service-card">
+              <div class="service-icon"><i class="fas fa-utensils"></i></div>
+              <h3>Dining & Restaurant</h3>
+              <p>
+                Continental breakfast, African traditional dishes, and 24/7 room
+                service.
+              </p>
+            </div>
+            <div class="service-card">
+              <div class="service-icon"><i class="fas fa-tshirt"></i></div>
+              <h3>Laundry & Dry Cleaning</h3>
+              <p>
+                Express same-day garment washing, pressing, and delicate fabric
+                care.
+              </p>
+            </div>
+            <div class="service-card">
+              <div class="service-icon"><i class="fas fa-spa"></i></div>
+              <h3>Spa & Wellness</h3>
+              <p>
+                Swedish massage and sauna relaxation treatments for hotel
+                guests.
+              </p>
+            </div>
+            <div class="service-card">
+              <div class="service-icon"><i class="fas fa-car"></i></div>
+              <h3>Airport Shuttle</h3>
+              <p>
+                Secure private airport transfers from Entebbe International
+                Airport.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Showcase Tab -->
+        <div id="tab-showcase" class="tab-pane">
+          <div class="section-header">
+            <h2>Public Room Showcase</h2>
+            <p>Visual preview of guest accommodations at Rwizi Arch Hotel</p>
+          </div>
+          <div class="showcase-gallery" id="public-showcase-grid">
+            <!-- Dynamic content -->
+          </div>
+        </div>
+
+        <!-- Worker Management Tab -->
+        <div id="tab-project" class="tab-pane">
+          <div class="section-header">
+            <h2>Worker & Group Management</h2>
+            <p>
+              Kampala International University IT Group Fieldwork Presentation &
+              Staff Roster
+            </p>
+          </div>
+
+          <div class="survey-notes">
+            <h4>
+              <i class="fas fa-clipboard-list"></i> Field Survey Feedback Notes
+            </h4>
+            <ul>
+              <li>
+                Identified major gaps in legacy paper-based booking systems
+                during initial site visit.
+              </li>
+              <li>
+                Staff requested a vibrant, intuitive interface capable of rapid
+                check-ins.
+              </li>
+              <li>
+                Recommended the integration of inline-editable rosters for fluid
+                staff management.
+              </li>
+              <li>
+                Proposed a modernized emerald and gold color theme to match
+                local physical branding materials.
+              </li>
+            </ul>
+          </div>
+
+          <div class="content-card">
+            <div class="card-header">
+              <h3>Worker Roster (Inline Editable)</h3>
+            </div>
+            <div class="team-grid" id="team-grid">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Reservation Modal -->
+    <div class="modal-backdrop" id="reservation-modal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>New Reservation</h3>
+          <button class="btn-close" onclick="closeReservationModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="reservation-form" onsubmit="handleNewReservation(event)">
+            <div class="form-group">
+              <label>Guest Full Name</label>
+              <input
+                type="text"
+                id="guest-name"
+                required
+                placeholder="E.g. John Doe"
+              />
+            </div>
+            <div class="form-group">
+              <label>Select Room</label>
+              <select id="room-select" required>
+                <option value="101">101 (Twin Executive) - UGX 150,000</option>
+                <option value="102">102 (Deluxe Queen) - UGX 180,000</option>
+                <option value="103">103 (Standard Double) - UGX 130,000</option>
+                <option value="104">104 (Executive Suite) - UGX 250,000</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Check-in Date</label>
+                <input type="date" id="check-in-date" required />
+              </div>
+              <div class="form-group">
+                <label>Check-out Date</label>
+                <input type="date" id="check-out-date" required />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="closeReservationModal()"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">
+                Confirm Booking
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Javascript Logic -->
+    <script>
+      // Authentication Logic
+      function handleLogin(event) {
+        event.preventDefault();
+        const pwd = document.getElementById("login-password").value;
+        if (pwd === "worker1234") {
+          document.getElementById("login-overlay").style.display = "none";
+          document.getElementById("main-app").style.display = "flex";
+          // Trigger initial renders
+          renderReservations();
+          renderRoomsManagement();
+          renderHousekeeping();
+          renderShowcase();
+          renderTeam();
+        } else {
+          document.getElementById("login-error").style.display = "block";
+        }
+      }
+
+      // Mock Data Store
+      let reservationsData = [
+        {
+          id: "RES-1001",
+          guest: "Guest Record",
+          room: "101 (Twin Executive)",
+          checkIn: "2026-10-10",
+          checkOut: "2026-10-30",
+          amount: "450,000",
+          status: "Confirmed",
+        },
+      ];
+
+      let roomsData = [
+        {
+          number: "101",
+          type: "Twin Executive",
+          price: "UGX 150,000",
+          status: "Occupied",
+          clean: "Cleaned",
+          staff: "Grace Akello",
+        },
+        {
+          number: "102",
+          type: "Deluxe Queen",
+          price: "UGX 180,000",
+          status: "Available",
+          clean: "Cleaned",
+          staff: "Moses Mugisha",
+        },
+        {
+          number: "103",
+          type: "Standard Double",
+          price: "UGX 130,000",
+          status: "Available",
+          clean: "Pending",
+          staff: "Sarah Namubiru",
+        },
+        {
+          number: "104",
+          type: "Executive Suite",
+          price: "UGX 250,000",
+          status: "Available",
+          clean: "Cleaned",
+          staff: "Grace Akello",
+        },
+      ];
+
+      let showcaseRooms = [
+        {
+          title: "Twin Executive Suite (Room 101)",
+          price: "UGX 150,000 / night",
+          desc: "Features dual twin beds with royal red runners, blue accent pillows, traditional mosquito nets, bedside lamps, and private en-suite bathroom.",
+        },
+        {
+          title: "Deluxe Queen Room (Room 102)",
+          price: "UGX 180,000 / night",
+          desc: "Spacious queen bedroom with olive runner decor, wooden wardrobe, telephone intercom, and large windows overlooking the Kansanga neighborhood.",
+        },
+        {
+          title: "Executive Media Suite (Room 104)",
+          price: "UGX 250,000 / night",
+          desc: "Bay-window viewing area with full curtain drapes, television desk unit, rattan armchairs, and premium ambient lighting.",
+        },
+      ];
+
+      // 9 Team Members for Inline Editing
+      let teamData = [
+        {
+          id: 1,
+          name: "Alice Namaganda",
+          role: "Project Manager / Lead Researcher",
+        },
+        { id: 2, name: "Brian Ochieng", role: "Frontend Developer" },
+        { id: 3, name: "Cynthia Atuhaire", role: "Backend Developer" },
+        { id: 4, name: "David Kintu", role: "Database Administrator" },
+        { id: 5, name: "Esther Nakabugo", role: "UI/UX Designer" },
+        { id: 6, name: "Felix Okello", role: "Systems Analyst" },
+        { id: 7, name: "Gloria Mutesi", role: "QA Tester" },
+        { id: 8, name: "Henry Ssenyondo", role: "Network Specialist" },
+        { id: 9, name: "Irene Kansiime", role: "Documentation Lead" },
+      ];
+
+      // Tab Navigation Controller
+      function switchTab(tabId, element) {
+        document
+          .querySelectorAll(".tab-pane")
+          .forEach((pane) => pane.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((btn) => btn.classList.remove("active"));
+
+        const targetTab = document.getElementById(`tab-${tabId}`);
+        if (targetTab) targetTab.classList.add("active");
+        if (element) element.classList.add("active");
+
+        const titles = {
+          dashboard: [
+            "Hotel Dashboard",
+            "Welcome to Rwizi Arch Hotel Kansanga • Your one stop solution for best hotel experience",
+          ],
+          rooms: [
+            "Room Management",
+            "Monitor live room availability, pricing, and guest assignments",
+          ],
+          reservations: [
+            "Reservations Management",
+            "Create, review, and manage guest bookings",
+          ],
+          housekeeping: [
+            "Housekeeping & Maintenance",
+            "Track room cleanliness, inspection status, and staff assignments",
+          ],
+          services: [
+            "Hotel Services & Amenities",
+            "Explore our comprehensive range of guest services and facilities",
+          ],
+          showcase: [
+            "Public Room Showcase",
+            "Visual preview of guest accommodations at Rwizi Arch Hotel",
+          ],
+          project: [
+            "Worker & Group Management",
+            "Kampala International University IT Group Fieldwork Presentation & Staff",
+          ],
+        };
+
+        if (titles[tabId]) {
+          document.getElementById("page-title").innerText = titles[tabId][0];
+          document.getElementById("page-subtitle").innerText = titles[tabId][1];
+        }
+      }
+
+      // Live Clock Updater
+      window.addEventListener("DOMContentLoaded", () => {
+        setInterval(() => {
+          const now = new Date();
+          document.getElementById("live-clock").innerText =
+            now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        }, 1000);
+      });
+
+      // Dynamic Table Renderers
+      function renderReservations() {
+        const dashTable = document.getElementById("dashboard-res-table");
+        const fullTable = document.getElementById("full-reservations-table");
+
+        let rowsHTML = "";
+        let fullHTML = "";
+
+        reservationsData.forEach((res) => {
+          rowsHTML += `
+                    <tr>
+                        <td><strong>${res.guest}</strong></td>
+                        <td>${res.room}</td>
+                        <td>${res.checkIn}</td>
+                        <td>${res.checkOut}</td>
+                        <td><span class="badge badge-success">${res.status}</span></td>
+                    </tr>
+                `;
+          fullHTML += `
+                    <tr>
+                        <td><strong>${res.id}</strong></td>
+                        <td>${res.guest}</td>
+                        <td>${res.room}</td>
+                        <td>${res.checkIn}</td>
+                        <td>${res.checkOut}</td>
+                        <td>UGX ${res.amount}</td>
+                        <td><span class="badge badge-success">${res.status}</span></td>
+                        <td><button class="btn-text" onclick="showNotification('Viewing booking invoice...')">Manage</button></td>
+                    </tr>
+                `;
+        });
+
+        dashTable.innerHTML = rowsHTML;
+        fullTable.innerHTML = fullHTML;
+        document.getElementById("stat-active-res").innerText =
+          reservationsData.length;
+      }
+
+      function renderRoomsManagement() {
+        const grid = document.getElementById("rooms-management-grid");
+        let html = "";
+        roomsData.forEach((room) => {
+          html += `
+                    <div class="room-card">
+                        <div class="room-card-header">
+                            <h3>Room ${room.number}</h3>
+                            <span class="badge ${room.status === "Occupied" ? "badge-warning" : "badge-success"}">${room.status}</span>
+                        </div>
+                        <div class="room-card-body">
+                            <p><strong>Type:</strong> ${room.type}</p>
+                            <div class="room-price">${room.price}</div>
+                            <p><strong>Housekeeping:</strong> ${room.clean}</p>
+                            <button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="toggleRoomStatus('${room.number}')">Toggle Status</button>
+                        </div>
+                    </div>
+                `;
+        });
+        grid.innerHTML = html;
+        document.getElementById("stat-total-rooms").innerText =
+          roomsData.length;
+      }
+
+      function renderHousekeeping() {
+        const table = document.getElementById("housekeeping-table");
+        let html = "";
+        roomsData.forEach((room) => {
+          html += `
+                    <tr>
+                        <td><strong>Room ${room.number}</strong></td>
+                        <td>${room.type}</td>
+                        <td><span class="badge ${room.clean === "Cleaned" ? "badge-success" : "badge-warning"}">${room.clean}</span></td>
+                        <td>${room.staff}</td>
+                        <td>2026-10-15 08:30 AM</td>
+                        <td><button class="btn-text" onclick="markClean('${room.number}')">Mark Cleaned</button></td>
+                    </tr>
+                `;
+        });
+        table.innerHTML = html;
+      }
+
+      function renderShowcase() {
+        const gallery = document.getElementById("public-showcase-grid");
+        let html = "";
+        showcaseRooms.forEach((room) => {
+          html += `
+                    <div class="showcase-card">
+                        <div class="showcase-img-box">
+                            <i class="fas fa-bed"></i>
+                        </div>
+                        <div class="showcase-body">
+                            <h3>${room.title}</h3>
+                            <div class="room-price" style="color: var(--warning);">${room.price}</div>
+                            <p>${room.desc}</p>
+                            <button class="btn btn-primary" onclick="openReservationModal()">Book This Room</button>
+                        </div>
+                    </div>
+                `;
+        });
+        gallery.innerHTML = html;
+      }
+
+      // Render 9 Team Members with Inline Editing
+      function renderTeam() {
+        const grid = document.getElementById("team-grid");
+        let html = "";
+        teamData.forEach((member, index) => {
+          html += `
+                    <div class="team-card">
+                        <span class="edit-hint"><i class="fas fa-pencil-alt"></i> Click to edit</span>
+                        <input type="text" value="${member.name}" onchange="updateTeamMember(${index}, 'name', this.value)" title="Edit Name">
+                        <input type="text" class="role-input" value="${member.role}" onchange="updateTeamMember(${index}, 'role', this.value)" title="Edit Role">
+                    </div>
+                `;
+        });
+        grid.innerHTML = html;
+      }
+
+      function updateTeamMember(index, field, value) {
+        teamData[index][field] = value;
+      }
+
+      // Modal Controllers
+      function openReservationModal() {
+        document.getElementById("reservation-modal").classList.add("open");
+      }
+      function closeReservationModal() {
+        document.getElementById("reservation-modal").classList.remove("open");
+      }
+
+      // Form Handling
+      function handleNewReservation(event) {
+        event.preventDefault();
+        const guest = document.getElementById("guest-name").value;
+        const roomVal = document.getElementById("room-select").value;
+        const checkIn = document.getElementById("check-in-date").value;
+        const checkOut = document.getElementById("check-out-date").value;
+
+        const newRes = {
+          id: "RES-" + Math.floor(1000 + Math.random() * 9000),
+          guest: guest,
+          room:
+            roomVal === "101"
+              ? "101 (Twin Executive)"
+              : roomVal === "102"
+                ? "102 (Deluxe Queen)"
+                : roomVal === "103"
+                  ? "103 (Standard Double)"
+                  : "104 (Executive Suite)",
+          checkIn: checkIn,
+          checkOut: checkOut,
+          amount: "180,000",
+          status: "Confirmed",
+        };
+
+        reservationsData.push(newRes);
+        renderReservations();
+        closeReservationModal();
+        showNotification("Reservation successfully created and saved!");
+        document.getElementById("reservation-form").reset();
+      }
+
+      function toggleRoomStatus(roomNum) {
+        const room = roomsData.find((r) => r.number === roomNum);
+        if (room) {
+          room.status = room.status === "Available" ? "Occupied" : "Available";
+          renderRoomsManagement();
+        }
+      }
+
+      function markClean(roomNum) {
+        const room = roomsData.find((r) => r.number === roomNum);
+        if (room) {
+          room.clean = "Cleaned";
+          renderHousekeeping();
+          showNotification(`Room ${roomNum} marked as cleaned and inspected.`);
+        }
+      }
+
+      // Custom Notification
+      function showNotification(message) {
+        const notif = document.createElement("div");
+        notif.textContent = message;
+        notif.style.cssText = `
+                position: fixed; bottom: 30px; right: 30px; 
+                background: var(--primary-dark); color: white; 
+                padding: 16px 24px; border-radius: 8px; 
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                z-index: 10000; border-left: 4px solid var(--accent-gold);
+                font-weight: 600; font-size: 0.95rem;
+                animation: slideIn 0.3s ease-out forwards;
+            `;
+        document.body.appendChild(notif);
+
+        setTimeout(() => {
+          notif.style.opacity = "0";
+          notif.style.transform = "translateY(20px)";
+          notif.style.transition = "all 0.3s ease-in";
+          setTimeout(() => notif.remove(), 300);
+        }, 3000);
+      }
+
+      // Add keyframes for notification to document head
+      const style = document.createElement("style");
+      style.textContent = `@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`;
+      document.head.appendChild(style);
+    </script>
+  </body>
+</html>
