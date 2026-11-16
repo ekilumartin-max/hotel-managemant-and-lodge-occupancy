@@ -104,6 +104,12 @@
         margin-bottom: 25px;
       }
 
+      .login-card form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
       .login-card input {
         width: 100%;
         padding: 14px;
@@ -586,54 +592,6 @@
         margin-bottom: 16px;
       }
 
-      /* Showcase Gallery */
-      .showcase-gallery {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 24px;
-      }
-      .showcase-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
-      }
-
-      .showcase-img-box {
-        height: 200px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 3rem;
-      }
-      .showcase-card:nth-child(1) .showcase-img-box {
-        background: linear-gradient(135deg, #ef4444, #b91c1c);
-      }
-      .showcase-card:nth-child(2) .showcase-img-box {
-        background: linear-gradient(135deg, var(--success), #047857);
-      }
-      .showcase-card:nth-child(3) .showcase-img-box {
-        background: linear-gradient(135deg, var(--accent-gold), #b45309);
-      }
-
-      .showcase-body {
-        padding: 20px;
-      }
-      .showcase-body h3 {
-        font-family: "Playfair Display", serif;
-        font-size: 1.2rem;
-        color: var(--primary-dark);
-        margin-bottom: 8px;
-      }
-      .showcase-body p {
-        font-size: 0.85rem;
-        color: var(--text-muted);
-        margin-bottom: 14px;
-        line-height: 1.5;
-      }
-
       /* Combined Project & Worker tab styles */
       .survey-notes {
         background: #fef9c3;
@@ -811,9 +769,17 @@
         <p>Staff Management Portal</p>
         <form id="login-form" onsubmit="handleLogin(event)">
           <input
+            type="email"
+            id="login-email"
+            placeholder="Staff email"
+            autocomplete="username"
+            required
+          />
+          <input
             type="password"
             id="login-password"
-            placeholder="Enter Access Password"
+            placeholder="Password"
+            autocomplete="current-password"
             required
           />
           <button
@@ -821,7 +787,6 @@
             class="btn btn-primary"
             style="
               width: 100%;
-              margin-top: 20px;
               padding: 14px;
               font-size: 1rem;
             "
@@ -838,7 +803,7 @@
               margin-top: 15px;
             "
           >
-            Incorrect password. Hint: worker1234
+            Unable to sign in.
           </p>
         </form>
       </div>
@@ -872,9 +837,6 @@
             <button class="nav-item" onclick="switchTab('services', this)">
               <i class="fas fa-concierge-bell"></i> Services
             </button>
-            <button class="nav-item" onclick="switchTab('showcase', this)">
-              <i class="fas fa-images"></i> Showcase Gallery
-            </button>
             <button class="nav-item" onclick="switchTab('project', this)">
               <i class="fas fa-users-cog"></i> Worker Management
             </button>
@@ -884,10 +846,17 @@
           <div class="user-badge">
             <div class="avatar">FD</div>
             <div class="user-info">
-              <span class="name">Front Desk Manager</span>
-              <span class="role">System Administrator</span>
+              <span class="name" id="signed-in-email">Hotel Staff</span>
+              <span class="role">Authenticated staff</span>
             </div>
           </div>
+          <button
+            class="btn btn-secondary"
+            style="width: 100%; margin-top: 14px"
+            onclick="handleLogout()"
+          >
+            Sign Out
+          </button>
         </div>
       </aside>
 
@@ -936,15 +905,21 @@
             </div>
             <div class="stat-card">
               <div class="stat-label" style="color: var(--warning)">
-                Payments Received
+                Simulated Payments Received
               </div>
-              <div class="stat-value">UGX 450,000</div>
+              <div class="stat-value" id="stat-payments-received">UGX 0</div>
             </div>
             <div class="stat-card">
               <div class="stat-label" style="color: var(--pink)">
                 Pending Bills
               </div>
-              <div class="stat-value" style="color: var(--danger)">UGX 0</div>
+              <div
+                class="stat-value"
+                id="stat-pending-bills"
+                style="color: var(--danger)"
+              >
+                UGX 0
+              </div>
             </div>
           </div>
 
@@ -1002,6 +977,7 @@
                     <th>Check Out</th>
                     <th>Amount</th>
                     <th>Status</th>
+                    <th>Payment</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -1086,17 +1062,6 @@
           </div>
         </div>
 
-        <!-- Showcase Tab -->
-        <div id="tab-showcase" class="tab-pane">
-          <div class="section-header">
-            <h2>Public Room Showcase</h2>
-            <p>Visual preview of guest accommodations at Rwizi Arch Hotel</p>
-          </div>
-          <div class="showcase-gallery" id="public-showcase-grid">
-            <!-- Dynamic content -->
-          </div>
-        </div>
-
         <!-- Worker Management Tab -->
         <div id="tab-project" class="tab-pane">
           <div class="section-header">
@@ -1166,10 +1131,7 @@
             <div class="form-group">
               <label>Select Room</label>
               <select id="room-select" required>
-                <option value="101">101 (Twin Executive) - UGX 150,000</option>
-                <option value="102">102 (Deluxe Queen) - UGX 180,000</option>
-                <option value="103">103 (Standard Double) - UGX 130,000</option>
-                <option value="104">104 (Executive Suite) - UGX 250,000</option>
+                <option value="" selected disabled>Select a room</option>
               </select>
             </div>
             <div class="form-row">
@@ -1200,107 +1162,171 @@
     </div>
 
     <!-- Javascript Logic -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-      // Authentication Logic
-      function handleLogin(event) {
-        event.preventDefault();
-        const pwd = document.getElementById("login-password").value;
-        if (pwd === "worker1234") {
+      // Paste the project's URL and publishable (anon) key here.
+      const SUPABASE_URL = "https://xguswcjvisgvtcetyvxu.supabase.co";
+      const SUPABASE_PUBLISHABLE_KEY =
+        "sb_publishable_Cu37G4O1F6Nxk81P2m6jIw_lMX1X90P";
+      const supabaseConfigured =
+        SUPABASE_URL.startsWith("https://") &&
+        !SUPABASE_URL.includes("YOUR_") &&
+        SUPABASE_PUBLISHABLE_KEY.length > 20 &&
+        !SUPABASE_PUBLISHABLE_KEY.includes("YOUR_");
+      const supabaseClient = supabaseConfigured
+        ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+        : null;
+
+      let reservationsData = [];
+      let roomsData = [];
+      let paymentsData = [];
+      let teamData = [];
+      let activeUserId = null;
+      let initializingUserId = null;
+
+      function showLoginError(message) {
+        const error = document.getElementById("login-error");
+        error.textContent = message;
+        error.style.display = "block";
+      }
+
+      function showLogin() {
+        activeUserId = null;
+        initializingUserId = null;
+        document.getElementById("main-app").style.display = "none";
+        document.getElementById("login-overlay").style.display = "flex";
+      }
+
+      async function initializeApp(session) {
+        const user = session?.user;
+        if (!user || activeUserId === user.id || initializingUserId === user.id) {
+          return;
+        }
+
+        initializingUserId = user.id;
+        try {
+          await loadAppData();
+          const { data, error } = await supabaseClient.auth.getSession();
+          if (error) throw error;
+          if (data.session?.user.id !== user.id) return;
+
+          activeUserId = user.id;
+          document.getElementById("signed-in-email").textContent =
+            user.email || "Hotel Staff";
+          document.getElementById("login-error").style.display = "none";
           document.getElementById("login-overlay").style.display = "none";
           document.getElementById("main-app").style.display = "flex";
-          // Trigger initial renders
-          renderReservations();
-          renderRoomsManagement();
-          renderHousekeeping();
-          renderShowcase();
           renderTeam();
-        } else {
-          document.getElementById("login-error").style.display = "block";
+        } catch (error) {
+          showLoginError(`Could not load hotel data: ${error.message}`);
+        } finally {
+          initializingUserId = null;
         }
       }
 
-      // Mock Data Store
-      let reservationsData = [
-        {
-          id: "RES-1001",
-          guest: "Guest Record",
-          room: "101 (Twin Executive)",
-          checkIn: "2026-10-10",
-          checkOut: "2026-10-30",
-          amount: "450,000",
-          status: "Confirmed",
-        },
-      ];
+      async function handleLogin(event) {
+        event.preventDefault();
+        if (!supabaseConfigured) {
+          showLoginError(
+            "Add your Supabase project URL and publishable key in the page script first.",
+          );
+          return;
+        }
 
-      let roomsData = [
-        {
-          number: "101",
-          type: "Twin Executive",
-          price: "UGX 150,000",
-          status: "Occupied",
-          clean: "Cleaned",
-          staff: "Grace Akello",
-        },
-        {
-          number: "102",
-          type: "Deluxe Queen",
-          price: "UGX 180,000",
-          status: "Available",
-          clean: "Cleaned",
-          staff: "Moses Mugisha",
-        },
-        {
-          number: "103",
-          type: "Standard Double",
-          price: "UGX 130,000",
-          status: "Available",
-          clean: "Pending",
-          staff: "Sarah Namubiru",
-        },
-        {
-          number: "104",
-          type: "Executive Suite",
-          price: "UGX 250,000",
-          status: "Available",
-          clean: "Cleaned",
-          staff: "Grace Akello",
-        },
-      ];
+        try {
+          const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: document.getElementById("login-email").value.trim(),
+            password: document.getElementById("login-password").value,
+          });
+          if (error) {
+            showLoginError(error.message);
+            return;
+          }
+          await initializeApp(data.session);
+        } catch (error) {
+          showLoginError(`Sign in failed: ${error.message}`);
+        }
+      }
 
-      let showcaseRooms = [
-        {
-          title: "Twin Executive Suite (Room 101)",
-          price: "UGX 150,000 / night",
-          desc: "Features dual twin beds with royal red runners, blue accent pillows, traditional mosquito nets, bedside lamps, and private en-suite bathroom.",
-        },
-        {
-          title: "Deluxe Queen Room (Room 102)",
-          price: "UGX 180,000 / night",
-          desc: "Spacious queen bedroom with olive runner decor, wooden wardrobe, telephone intercom, and large windows overlooking the Kansanga neighborhood.",
-        },
-        {
-          title: "Executive Media Suite (Room 104)",
-          price: "UGX 250,000 / night",
-          desc: "Bay-window viewing area with full curtain drapes, television desk unit, rattan armchairs, and premium ambient lighting.",
-        },
-      ];
+      async function handleLogout() {
+        try {
+          const { error } = await supabaseClient.auth.signOut();
+          if (error) {
+            showNotification(`Sign out failed: ${error.message}`);
+          }
+        } catch (error) {
+          showNotification(`Sign out failed: ${error.message}`);
+        }
+      }
 
-      // 9 Team Members for Inline Editing
-      let teamData = [
-        {
-          id: 1,
-          name: "Alice Namaganda",
-          role: "Project Manager / Lead Researcher",
-        },
-        { id: 2, name: "Brian Ochieng", role: "Frontend Developer" },
-        { id: 3, name: "Cynthia Atuhaire", role: "Backend Developer" },
-        { id: 4, name: "David Kintu", role: "Database Administrator" },
-        { id: 5, name: "Esther Nakabugo", role: "UI/UX Designer" },
-        { id: 6, name: "Felix Okello", role: "Systems Analyst" },
-        { id: 7, name: "Gloria Mutesi", role: "QA Tester" },
-        { id: 8, name: "Henry Ssenyondo", role: "Network Specialist" },
-        { id: 9, name: "Irene Kansiime", role: "Documentation Lead" },
-      ];
+      async function loadAppData() {
+        const [
+          roomsResult,
+          reservationsResult,
+          workersResult,
+          paymentsResult,
+        ] = await Promise.all([
+          supabaseClient.from("rooms").select("*").order("room_number"),
+          supabaseClient
+            .from("reservations")
+            .select(
+              "id, booking_code, guest_name, room_id, check_in, check_out, total_amount, status, rooms(room_number, room_type)",
+            )
+            .order("created_at", { ascending: false }),
+          supabaseClient
+            .from("workers")
+            .select("id, full_name, job_title")
+            .order("full_name"),
+          supabaseClient
+            .from("payments")
+            .select(
+              "id, reservation_id, amount, payment_method, status, reference, paid_at",
+            ),
+        ]);
+        if (roomsResult.error) throw roomsResult.error;
+        if (reservationsResult.error) throw reservationsResult.error;
+        if (workersResult.error) throw workersResult.error;
+        if (paymentsResult.error) throw paymentsResult.error;
+
+        roomsData = roomsResult.data;
+        paymentsData = paymentsResult.data;
+        const paymentsByReservation = new Map(
+          paymentsData.map((payment) => [payment.reservation_id, payment]),
+        );
+        reservationsData = reservationsResult.data.map((reservation) => ({
+          ...reservation,
+          payment: paymentsByReservation.get(reservation.id) || null,
+        }));
+        teamData = workersResult.data;
+        renderReservations();
+        renderRoomsManagement();
+        renderHousekeeping();
+        renderPaymentTotals();
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        if (!supabaseConfigured) {
+          showLoginError(
+            "Setup required: add the Supabase project URL and publishable key in the page script.",
+          );
+          return;
+        }
+
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+          if (event === "SIGNED_OUT") {
+            showLogin();
+          } else if (event === "SIGNED_IN" && session) {
+            void initializeApp(session);
+          }
+        });
+
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) {
+          showLoginError(error.message);
+        } else if (data.session) {
+          await initializeApp(data.session);
+        }
+      });
 
       // Tab Navigation Controller
       function switchTab(tabId, element) {
@@ -1336,10 +1362,6 @@
             "Hotel Services & Amenities",
             "Explore our comprehensive range of guest services and facilities",
           ],
-          showcase: [
-            "Public Room Showcase",
-            "Visual preview of guest accommodations at Rwizi Arch Hotel",
-          ],
           project: [
             "Worker & Group Management",
             "Kampala International University IT Group Fieldwork Presentation & Staff",
@@ -1362,6 +1384,56 @@
       });
 
       // Dynamic Table Renderers
+      function escapeHTML(value) {
+        return String(value ?? "").replace(/[&<>"']/g, (character) => {
+          const entities = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          };
+          return entities[character];
+        });
+      }
+
+      function formatMoney(value) {
+        return `UGX ${Number(value).toLocaleString("en-UG")}`;
+      }
+
+      function renderPaymentTotals() {
+        const reservationStatuses = new Map(
+          reservationsData.map((reservation) => [
+            reservation.id,
+            reservation.status,
+          ]),
+        );
+        const received = paymentsData
+          .filter(
+            (payment) =>
+              payment.payment_method === "dummy" &&
+              payment.status === "simulated_paid" &&
+              reservationStatuses.get(payment.reservation_id) !== "cancelled",
+          )
+          .reduce((sum, payment) => sum + Number(payment.amount), 0);
+        const pending = reservationsData
+          .filter((reservation) => reservation.status !== "cancelled")
+          .reduce(
+            (sum, reservation) =>
+              sum +
+              Math.max(
+                0,
+                Number(reservation.total_amount) -
+                  Number(reservation.payment?.amount || 0),
+              ),
+            0,
+          );
+        document.getElementById("stat-payments-received").textContent =
+          formatMoney(received);
+        document.getElementById("stat-pending-bills").textContent =
+          formatMoney(pending);
+      }
+
       function renderReservations() {
         const dashTable = document.getElementById("dashboard-res-table");
         const fullTable = document.getElementById("full-reservations-table");
@@ -1370,25 +1442,46 @@
         let fullHTML = "";
 
         reservationsData.forEach((res) => {
+          const roomLabel = `${res.rooms.room_number} (${res.rooms.room_type})`;
+          const statusClass =
+            res.status === "cancelled" || res.status === "checked_out"
+              ? "badge-success"
+              : "badge-warning";
+          const paymentLabel = res.payment
+            ? res.status === "cancelled"
+              ? "Cancelled · no refund"
+              : "Paid"
+            : "Unpaid";
+          const paymentTitle = res.payment
+            ? `Simulated payment reference: ${res.payment.reference}`
+            : "";
+          const canCancel = ["pending", "confirmed"].includes(res.status);
+          const actions = canCancel
+            ? `${res.payment ? "" : `<button class="btn-text simulate-payment-button" data-reservation-id="${escapeHTML(res.id)}">Confirm Payment</button>`}
+               <button class="btn-text cancel-reservation-button" data-reservation-id="${escapeHTML(res.id)}">Cancel Reservation</button>`
+            : res.status === "cancelled"
+              ? "Cancelled"
+              : "—";
           rowsHTML += `
                     <tr>
-                        <td><strong>${res.guest}</strong></td>
-                        <td>${res.room}</td>
-                        <td>${res.checkIn}</td>
-                        <td>${res.checkOut}</td>
-                        <td><span class="badge badge-success">${res.status}</span></td>
+                        <td><strong>${escapeHTML(res.guest_name)}</strong></td>
+                        <td>${escapeHTML(roomLabel)}</td>
+                        <td>${escapeHTML(res.check_in)}</td>
+                        <td>${escapeHTML(res.check_out)}</td>
+                        <td><span class="badge ${statusClass}">${escapeHTML(res.status)}</span></td>
                     </tr>
                 `;
           fullHTML += `
                     <tr>
-                        <td><strong>${res.id}</strong></td>
-                        <td>${res.guest}</td>
-                        <td>${res.room}</td>
-                        <td>${res.checkIn}</td>
-                        <td>${res.checkOut}</td>
-                        <td>UGX ${res.amount}</td>
-                        <td><span class="badge badge-success">${res.status}</span></td>
-                        <td><button class="btn-text" onclick="showNotification('Viewing booking invoice...')">Manage</button></td>
+                        <td><strong>${escapeHTML(res.booking_code)}</strong></td>
+                        <td>${escapeHTML(res.guest_name)}</td>
+                        <td>${escapeHTML(roomLabel)}</td>
+                        <td>${escapeHTML(res.check_in)}</td>
+                        <td>${escapeHTML(res.check_out)}</td>
+                        <td>${formatMoney(res.total_amount)}</td>
+                        <td><span class="badge ${statusClass}">${escapeHTML(res.status)}</span></td>
+                        <td><span class="badge ${res.payment && res.status !== "cancelled" ? "badge-success" : "badge-warning"}" title="${escapeHTML(paymentTitle)}">${paymentLabel}</span></td>
+                        <td>${actions}</td>
                     </tr>
                 `;
         });
@@ -1396,29 +1489,48 @@
         dashTable.innerHTML = rowsHTML;
         fullTable.innerHTML = fullHTML;
         document.getElementById("stat-active-res").innerText =
-          reservationsData.length;
+          reservationsData.filter(
+            (res) => !["cancelled", "checked_out"].includes(res.status),
+          ).length;
+        fullTable.querySelectorAll(".simulate-payment-button").forEach((button) => {
+          button.addEventListener("click", () =>
+            simulateDummyPayment(button.dataset.reservationId),
+          );
+        });
+        fullTable.querySelectorAll(".cancel-reservation-button").forEach((button) => {
+          button.addEventListener("click", () =>
+            cancelReservation(button.dataset.reservationId),
+          );
+        });
       }
 
       function renderRoomsManagement() {
         const grid = document.getElementById("rooms-management-grid");
         let html = "";
         roomsData.forEach((room) => {
+          const statusClass =
+            room.status === "Occupied" ? "badge-warning" : "badge-success";
           html += `
                     <div class="room-card">
                         <div class="room-card-header">
-                            <h3>Room ${room.number}</h3>
-                            <span class="badge ${room.status === "Occupied" ? "badge-warning" : "badge-success"}">${room.status}</span>
+                            <h3>Room ${escapeHTML(room.room_number)}</h3>
+                            <span class="badge ${statusClass}">${escapeHTML(room.status)}</span>
                         </div>
                         <div class="room-card-body">
-                            <p><strong>Type:</strong> ${room.type}</p>
-                            <div class="room-price">${room.price}</div>
-                            <p><strong>Housekeeping:</strong> ${room.clean}</p>
-                            <button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="toggleRoomStatus('${room.number}')">Toggle Status</button>
+                            <p><strong>Type:</strong> ${escapeHTML(room.room_type)}</p>
+                            <div class="room-price">${formatMoney(room.nightly_rate)} / night</div>
+                                            <p><strong>Housekeeping:</strong> ${escapeHTML(room.housekeeping_status)}</p>
+                            <button class="btn btn-secondary room-status-button" data-room-id="${escapeHTML(room.id)}" style="width:100%; margin-top:10px;">Toggle Status</button>
                         </div>
                     </div>
                 `;
         });
         grid.innerHTML = html;
+        grid.querySelectorAll(".room-status-button").forEach((button) => {
+          button.addEventListener("click", () =>
+            toggleRoomStatus(button.dataset.roomId),
+          );
+        });
         document.getElementById("stat-total-rooms").innerText =
           roomsData.length;
       }
@@ -1427,63 +1539,82 @@
         const table = document.getElementById("housekeeping-table");
         let html = "";
         roomsData.forEach((room) => {
+          const cleaned = room.housekeeping_status === "Cleaned";
+          const lastCleaned = room.last_cleaned_at
+            ? new Date(room.last_cleaned_at).toLocaleString()
+            : "Not recorded";
           html += `
                     <tr>
-                        <td><strong>Room ${room.number}</strong></td>
-                        <td>${room.type}</td>
-                        <td><span class="badge ${room.clean === "Cleaned" ? "badge-success" : "badge-warning"}">${room.clean}</span></td>
-                        <td>${room.staff}</td>
-                        <td>2026-10-15 08:30 AM</td>
-                        <td><button class="btn-text" onclick="markClean('${room.number}')">Mark Cleaned</button></td>
+                        <td><strong>Room ${escapeHTML(room.room_number)}</strong></td>
+                        <td>${escapeHTML(room.room_type)}</td>
+                        <td><span class="badge ${cleaned ? "badge-success" : "badge-warning"}">${escapeHTML(room.housekeeping_status)}</span></td>
+                        <td>${escapeHTML(room.assigned_staff || "Unassigned")}</td>
+                        <td>${escapeHTML(lastCleaned)}</td>
+                        <td><button class="btn-text mark-clean-button" data-room-id="${escapeHTML(room.id)}">${cleaned ? "Mark Pending" : "Mark Cleaned"}</button></td>
                     </tr>
                 `;
         });
         table.innerHTML = html;
-      }
-
-      function renderShowcase() {
-        const gallery = document.getElementById("public-showcase-grid");
-        let html = "";
-        showcaseRooms.forEach((room) => {
-          html += `
-                    <div class="showcase-card">
-                        <div class="showcase-img-box">
-                            <i class="fas fa-bed"></i>
-                        </div>
-                        <div class="showcase-body">
-                            <h3>${room.title}</h3>
-                            <div class="room-price" style="color: var(--warning);">${room.price}</div>
-                            <p>${room.desc}</p>
-                            <button class="btn btn-primary" onclick="openReservationModal()">Book This Room</button>
-                        </div>
-                    </div>
-                `;
+        table.querySelectorAll(".mark-clean-button").forEach((button) => {
+          button.addEventListener("click", () => markClean(button.dataset.roomId));
         });
-        gallery.innerHTML = html;
       }
 
-      // Render 9 Team Members with Inline Editing
+      // Render database-backed workers with inline editing.
       function renderTeam() {
         const grid = document.getElementById("team-grid");
         let html = "";
-        teamData.forEach((member, index) => {
+        teamData.forEach((member) => {
           html += `
                     <div class="team-card">
                         <span class="edit-hint"><i class="fas fa-pencil-alt"></i> Click to edit</span>
-                        <input type="text" value="${member.name}" onchange="updateTeamMember(${index}, 'name', this.value)" title="Edit Name">
-                        <input type="text" class="role-input" value="${member.role}" onchange="updateTeamMember(${index}, 'role', this.value)" title="Edit Role">
+                        <input type="text" value="${escapeHTML(member.full_name)}" onchange="updateTeamMember('${member.id}', 'full_name', this.value)" title="Edit Name" aria-label="Worker name">
+                        <input type="text" class="role-input" value="${escapeHTML(member.job_title)}" onchange="updateTeamMember('${member.id}', 'job_title', this.value)" title="Edit Job Title" aria-label="Worker job title">
                     </div>
                 `;
         });
         grid.innerHTML = html;
       }
 
-      function updateTeamMember(index, field, value) {
-        teamData[index][field] = value;
+      async function updateTeamMember(workerId, field, value) {
+        if (!["full_name", "job_title"].includes(field)) return;
+        const worker = teamData.find((member) => member.id === workerId);
+        const updatedValue = value.trim();
+        if (!worker || !updatedValue) {
+          renderTeam();
+          showNotification("Worker name and job title cannot be empty.");
+          return;
+        }
+
+        const { error } = await supabaseClient
+          .from("workers")
+          .update({ [field]: updatedValue, updated_at: new Date().toISOString() })
+          .eq("id", workerId);
+        if (error) {
+          renderTeam();
+          showNotification(`Could not save worker: ${error.message}`);
+          return;
+        }
+
+        worker[field] = updatedValue;
+        renderTeam();
+        showNotification("Worker details saved.");
       }
 
       // Modal Controllers
       function openReservationModal() {
+        const select = document.getElementById("room-select");
+        select.innerHTML = roomsData
+          .filter((room) => room.status === "Available")
+          .map(
+            (room) =>
+              `<option value="${escapeHTML(room.id)}">${escapeHTML(room.room_number)} (${escapeHTML(room.room_type)}) - ${formatMoney(room.nightly_rate)} / night</option>`,
+          )
+          .join("");
+        if (!select.options.length) {
+          showNotification("No rooms are currently available to book.");
+          return;
+        }
         document.getElementById("reservation-modal").classList.add("open");
       }
       function closeReservationModal() {
@@ -1491,52 +1622,191 @@
       }
 
       // Form Handling
-      function handleNewReservation(event) {
+      async function handleNewReservation(event) {
         event.preventDefault();
-        const guest = document.getElementById("guest-name").value;
-        const roomVal = document.getElementById("room-select").value;
+        const guest = document.getElementById("guest-name").value.trim();
+        const roomId = document.getElementById("room-select").value;
         const checkIn = document.getElementById("check-in-date").value;
         const checkOut = document.getElementById("check-out-date").value;
+        const room = roomsData.find((item) => item.id === roomId);
+        const nights =
+          (Date.parse(`${checkOut}T00:00:00Z`) -
+            Date.parse(`${checkIn}T00:00:00Z`)) /
+          86400000;
 
-        const newRes = {
-          id: "RES-" + Math.floor(1000 + Math.random() * 9000),
-          guest: guest,
-          room:
-            roomVal === "101"
-              ? "101 (Twin Executive)"
-              : roomVal === "102"
-                ? "102 (Deluxe Queen)"
-                : roomVal === "103"
-                  ? "103 (Standard Double)"
-                  : "104 (Executive Suite)",
-          checkIn: checkIn,
-          checkOut: checkOut,
-          amount: "180,000",
-          status: "Confirmed",
-        };
+        if (!guest) {
+          showNotification("Enter the guest's full name.");
+          return;
+        }
+        if (!room || !Number.isInteger(nights) || nights < 1) {
+          showNotification("Choose a valid room and check-out date.");
+          return;
+        }
 
-        reservationsData.push(newRes);
-        renderReservations();
+        const { error } = await supabaseClient.from("reservations").insert({
+          guest_name: guest,
+          room_id: room.id,
+          check_in: checkIn,
+          check_out: checkOut,
+          total_amount: Number(room.nightly_rate) * nights,
+          status: "confirmed",
+          created_by: activeUserId,
+        });
+        if (error) {
+          showNotification(`Could not save reservation: ${error.message}`);
+          return;
+        }
+
+        try {
+          await loadAppData();
+        } catch (loadError) {
+          showNotification(`Reservation saved, but refresh failed: ${loadError.message}`);
+          return;
+        }
         closeReservationModal();
-        showNotification("Reservation successfully created and saved!");
+        showNotification("Reservation successfully created and saved.");
         document.getElementById("reservation-form").reset();
       }
 
-      function toggleRoomStatus(roomNum) {
-        const room = roomsData.find((r) => r.number === roomNum);
-        if (room) {
-          room.status = room.status === "Available" ? "Occupied" : "Available";
-          renderRoomsManagement();
+      async function simulateDummyPayment(reservationId) {
+        const reservation = reservationsData.find(
+          (item) => item.id === reservationId,
+        );
+        if (!reservation || reservation.payment) return;
+        if (reservation.status === "cancelled") {
+          showNotification("Cancelled reservations cannot be paid.");
+          return;
         }
+
+        const amount = Number(reservation.total_amount);
+        const confirmed = window.confirm(
+          `SIMULATION ONLY — no real money will be charged.\n\nConfirm payment of ${formatMoney(amount)} for ${reservation.booking_code}?`,
+        );
+        if (!confirmed) return;
+
+        const { error } = await supabaseClient.from("payments").insert({
+          reservation_id: reservation.id,
+          amount,
+          payment_method: "dummy",
+          status: "simulated_paid",
+          created_by: activeUserId,
+        });
+        if (error) {
+          showNotification(`Could not confirm payment: ${error.message}`);
+          return;
+        }
+
+        try {
+          await loadAppData();
+        } catch (loadError) {
+          showNotification(
+            `Payment saved, but dashboard refresh failed: ${loadError.message}`,
+          );
+          return;
+        }
+        showNotification(
+          `Dummy payment recorded for ${reservation.booking_code}. No real payment was processed.`,
+        );
       }
 
-      function markClean(roomNum) {
-        const room = roomsData.find((r) => r.number === roomNum);
-        if (room) {
-          room.clean = "Cleaned";
-          renderHousekeeping();
-          showNotification(`Room ${roomNum} marked as cleaned and inspected.`);
+      async function cancelReservation(reservationId) {
+        const reservation = reservationsData.find(
+          (item) => item.id === reservationId,
+        );
+        if (!reservation || !["pending", "confirmed"].includes(reservation.status)) {
+          return;
         }
+
+        const paymentNotice = reservation.payment
+          ? "\n\nThis reservation has a dummy payment. Cancelling will not issue a refund; the dummy record will be kept for reference."
+          : "";
+        const confirmed = window.confirm(
+          `Cancel reservation ${reservation.booking_code} for ${reservation.guest_name}?${paymentNotice}`,
+        );
+        if (!confirmed) return;
+
+        const { data, error } = await supabaseClient
+          .from("reservations")
+          .update({ status: "cancelled" })
+          .eq("id", reservation.id)
+          .eq("status", reservation.status)
+          .select("id")
+          .maybeSingle();
+        if (error) {
+          showNotification(`Could not cancel reservation: ${error.message}`);
+          return;
+        }
+        if (!data) {
+          showNotification(
+            "Reservation status changed. Refresh the list and try again.",
+          );
+          try {
+            await loadAppData();
+          } catch (loadError) {
+            showNotification(`Could not refresh reservations: ${loadError.message}`);
+          }
+          return;
+        }
+
+        try {
+          await loadAppData();
+        } catch (loadError) {
+          showNotification(
+            `Reservation cancelled, but refresh failed: ${loadError.message}`,
+          );
+          return;
+        }
+        showNotification(
+          reservation.payment
+            ? "Reservation cancelled. No refund was issued for its dummy payment."
+            : "Reservation cancelled.",
+        );
+      }
+
+      async function toggleRoomStatus(roomId) {
+        const room = roomsData.find((item) => item.id === roomId);
+        if (!room) return;
+
+        const nextStatus =
+          room.status === "Available" ? "Occupied" : "Available";
+        const { error } = await supabaseClient
+          .from("rooms")
+          .update({ status: nextStatus })
+          .eq("id", room.id);
+        if (error) {
+          showNotification(`Could not update room: ${error.message}`);
+          return;
+        }
+        room.status = nextStatus;
+        renderRoomsManagement();
+      }
+
+      async function markClean(roomId) {
+        const room = roomsData.find((item) => item.id === roomId);
+        if (!room) return;
+
+        const nextStatus =
+          room.housekeeping_status === "Cleaned" ? "Pending" : "Cleaned";
+        const update = {
+          housekeeping_status: nextStatus,
+          ...(nextStatus === "Cleaned"
+            ? { last_cleaned_at: new Date().toISOString() }
+            : {}),
+        };
+        const { error } = await supabaseClient
+          .from("rooms")
+          .update(update)
+          .eq("id", room.id);
+        if (error) {
+          showNotification(`Could not update housekeeping: ${error.message}`);
+          return;
+        }
+        room.housekeeping_status = nextStatus;
+        if (nextStatus === "Cleaned") {
+          room.last_cleaned_at = update.last_cleaned_at;
+        }
+        renderHousekeeping();
+        showNotification(`Room ${room.room_number} marked as ${nextStatus.toLowerCase()}.`);
       }
 
       // Custom Notification
